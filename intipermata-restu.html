@@ -286,22 +286,23 @@
   .why-cell p{margin-top:10px;color:rgba(246,245,238,.74);font-size:.92rem;}
 
   /* ============ CLIENTS ============ */
+  .clients-section{background:var(--forest);color:var(--on-forest);}
   .clients-eyebrow{
     font-family:var(--font-mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;
-    color:var(--text-muted);text-align:center;padding-top:22px;
+    color:#DDB59E;text-align:center;padding-top:22px;
   }
-  .clients-wrap{overflow:hidden;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-top:14px;}
+  .clients-wrap{overflow:hidden;border-top:1px solid rgba(246,245,238,.18);border-bottom:1px solid rgba(246,245,238,.18);margin-top:14px;}
   .clients-track{display:flex;width:max-content;animation:ticker 26s linear infinite;}
   .clients-wrap:hover .clients-track{animation-play-state:paused;}
   .client-item{
     padding:26px 40px;font-family:var(--font-display);font-weight:600;font-size:1.15rem;
-    color:var(--text-muted);white-space:nowrap;border-right:1px solid var(--border);
+    color:rgba(246,245,238,.78);white-space:nowrap;border-right:1px solid rgba(246,245,238,.18);
     display:flex;align-items:center;
   }
-  .client-logos-wrap{padding-bottom:28px;border-bottom:1px solid var(--border);}
+  .client-logos-wrap{padding-bottom:28px;}
   .client-logos-grid{
-    display:flex;flex-wrap:wrap;justify-content:center;gap:1px;background:var(--border);
-    border:1px solid var(--border);margin-top:14px;
+    display:flex;flex-wrap:wrap;justify-content:center;gap:1px;background:rgba(246,245,238,.18);
+    border:1px solid rgba(246,245,238,.18);margin-top:14px;
   }
   .client-logo-cell{
     flex:1 1 200px;background:var(--surface);padding:30px 44px;display:flex;align-items:center;justify-content:center;
@@ -586,7 +587,7 @@
   </section>
 
   <!-- ============ CLIENTS ============ -->
-  <section data-testid="clients-section">
+  <section class="clients-section" data-testid="clients-section">
     <p class="clients-eyebrow" id="clientsNamesEyebrow" data-t="clients_more_label">Dipercaya juga oleh</p>
     <div class="clients-wrap" id="clientsNamesWrap">
       <div class="clients-track" id="clientsNamesTrack"></div>
@@ -1036,7 +1037,10 @@
     var nameClients = clients.filter(function(c){ return !c.logo; });
 
     if(nameClients.length){
-      var items = nameClients.concat(nameClients).map(function(c){
+      // repeat well past 2x so the strip stays wider than any real viewport — with the
+      // track split into two identical halves, ticker's translateX(-50%) always loops seamlessly
+      var loopSet = nameClients.concat(nameClients).concat(nameClients).concat(nameClients);
+      var items = loopSet.map(function(c){
         return '<div class="client-item">'+c.name+'</div>';
       }).join("");
       document.getElementById("clientsNamesTrack").innerHTML = items;

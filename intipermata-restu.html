@@ -247,7 +247,7 @@
   .hero-cta-row{display:flex;flex-wrap:wrap;gap:14px;margin-top:32px;}
   .hero-cta-row .btn:not(.btn-solid){border-color:rgba(246,245,238,.55);color:#F6F5EE;}
   .hero-cta-row .btn:not(.btn-solid):hover{background:#F6F5EE;color:#0B1B13;}
-  .ref-card{border:1px solid var(--border-strong);background:var(--surface);color:var(--text);padding:24px;box-shadow:0 24px 54px -20px rgba(0,0,0,.55);}
+  .ref-card{border:1px solid var(--border-strong);background:var(--surface);color:var(--text);padding:24px;box-shadow:0 24px 54px -20px rgba(0,0,0,.55);transition:opacity .25s ease;}
   .ref-card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
   .live-badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:.68rem;letter-spacing:.1em;color:var(--up);}
   .ref-price{font-family:var(--font-mono);font-size:2rem;margin-top:2px;}
@@ -969,6 +969,7 @@
   ];
 
   var lang = "id";
+  var heroRefIndex = 0;
 
   function fmtChg(v){
     var s = (v>=0?"+":"") + v.toFixed(2) + "%";
@@ -982,18 +983,36 @@
       var testid = "price-row-" + p.type.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");
       return '<tr data-testid="'+testid+'"><td class="grade">'+p.type+'</td><td class="num">Rp '+p.price.toLocaleString("id-ID")+'</td><td><span class="chg num '+c.cls+'">'+c.arrow+' '+c.text+'</span></td></tr>';
     }).join("");
-    // Hero "Today's Reference" card mirrors the first row (SHFE) so it is a real,
-    // computed figure in sync with the table below, not a static leftover value.
-    var ref = priceData[0];
-    if(ref){
-      var refChg = ref.prev ? ((ref.price - ref.prev) / ref.prev * 100) : 0;
-      var rc = fmtChg(refChg);
-      document.getElementById("heroRefName").textContent = ref.type;
-      document.getElementById("heroRefPrice").innerHTML = "Rp " + ref.price.toLocaleString("id-ID") + '<span style="font-size:1rem;color:var(--text-muted);">/kg</span>';
-      var chgEl = document.getElementById("heroRefChg");
-      chgEl.className = "chg num " + rc.cls;
-      chgEl.innerHTML = rc.arrow + " " + rc.text + ' · <span data-t="hero_24h">' + (TR.hero_24h ? TR.hero_24h[lang] : "24H") + "</span>";
-    }
+    // Hero "Today's Reference" card auto-rotates through priceData (see
+    // renderHeroRef/startHeroRefRotation) so it stays a real, computed figure
+    // in sync with the table below, not a static leftover value.
+    renderHeroRef();
+  }
+
+  function renderHeroRef(){
+    var ref = priceData[heroRefIndex % priceData.length];
+    if(!ref) return;
+    var refChg = ref.prev ? ((ref.price - ref.prev) / ref.prev * 100) : 0;
+    var rc = fmtChg(refChg);
+    document.getElementById("heroRefName").textContent = ref.type;
+    document.getElementById("heroRefPrice").innerHTML = "Rp " + ref.price.toLocaleString("id-ID") + '<span style="font-size:1rem;color:var(--text-muted);">/kg</span>';
+    var chgEl = document.getElementById("heroRefChg");
+    chgEl.className = "chg num " + rc.cls;
+    chgEl.innerHTML = rc.arrow + " " + rc.text + ' · <span data-t="hero_24h">' + (TR.hero_24h ? TR.hero_24h[lang] : "24H") + "</span>";
+  }
+
+  function startHeroRefRotation(){
+    if(priceData.length <= 1) return;
+    var card = document.querySelector(".ref-card");
+    setInterval(function(){
+      heroRefIndex = (heroRefIndex + 1) % priceData.length;
+      if(card){
+        card.style.opacity = "0.4";
+        setTimeout(function(){ renderHeroRef(); card.style.opacity = "1"; }, 220);
+      } else {
+        renderHeroRef();
+      }
+    }, 5000);
   }
 
   function renderChart(){
@@ -1144,6 +1163,7 @@
   renderTesti();
   applyLang();
   refreshFromSheet();
+  startHeroRefRotation();
 
   // reveal-on-scroll for sections (progressive enhancement; content already visible at rest)
   document.querySelectorAll(".section").forEach(function(s){ s.classList.add("reveal-anim"); });
